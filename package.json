@@ -1,0 +1,17 @@
+{
+  "name": "plantresilient",
+  "version": "1.0.0",
+  "description": "Application which maps and identifies areas in the Southern part of the U.S. which will be negatively effected by climate change.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.2",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}
