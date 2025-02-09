@@ -36,9 +36,8 @@ const MapComponent = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [zoomLevel, setZoomLevel] = useState(7);
   const [reloadKey, setReloadKey] = useState(0); // Add a reload key to trigger re-render
-
-  const mode = 2;
-  const polution = true;
+  const [mode, setMode] = useState(2); // Track the current mode
+  const [pollution, setPollution] = useState(true); // Keep track of the pollution state
 
   const hardinessMap = {
     "5b": "#5ec9e0",
@@ -56,7 +55,6 @@ const MapComponent = () => {
     "11b": "#e88564",
     "12a": "#d4594f",
     "12b": "#b62929"
-
   };
 
   const handleToggle = (isToggled) => {
@@ -64,6 +62,46 @@ const MapComponent = () => {
 
     // Change the reloadKey to force a re-render and reload the colors
     setReloadKey(prevKey => prevKey + 1);
+  };
+
+  // Add a function to handle the mode change
+  const handleModeChange = () => {
+    const newMode = mode === 2 ? 0 : mode + 1; // Toggle between 0, 1, 2 for the mode
+    setMode(newMode); // Update mode
+    setReloadKey(prevKey => prevKey + 1); // Trigger a re-render to reload the data
+  };
+
+  // Add a function to toggle pollution state
+  const handlePollutionToggle = () => {
+    setPollution(!pollution); // Toggle the pollution state
+    setReloadKey(prevKey => prevKey + 1); // Trigger a re-render to reload the data
+  };
+
+  // Get mode description based on pollution and mode
+  const getModeDescription = () => {
+    if (!pollution) {
+      switch (mode) {
+        case 0:
+          return 'Early Low -> 2010 - 2039';
+        case 1:
+          return 'Mid Low -> 2040 - 2069';
+        case 2:
+          return 'High Low -> 2070 - 2099';
+        default:
+          return '';
+      }
+    } else {
+      switch (mode) {
+        case 0:
+          return 'Early High -> 2010 - 2039';
+        case 1:
+          return 'Mid High -> 2040 - 2069';
+        case 2:
+          return 'Late High -> 2070 - 2099';
+        default:
+          return '';
+      }
+    }
   };
 
   // Fetch GeoJSON data from the server
@@ -81,7 +119,7 @@ const MapComponent = () => {
     };
 
     fetchGeojsonData();
-  }, []);  
+  }, []);
 
   const getStyle = (feature) => {
     // Default color
@@ -102,8 +140,8 @@ const MapComponent = () => {
 
     try {
       let response;
-      if(polution){
-        switch(mode) {
+      if (pollution) {
+        switch (mode) {
           case 0:
             response = await fetch(`/api/earlyHigh/${zipCode}`);
             break;
@@ -114,11 +152,11 @@ const MapComponent = () => {
             response = await fetch(`/api/lateHigh/${zipCode}`);
             break;
           default:
-            mode = 0
+            mode = 0;
             response = await fetch(`/api/earlyHigh/${zipCode}`);
         }
-      }else{
-        switch(mode) {
+      } else {
+        switch (mode) {
           case 0:
             response = await fetch(`/api/earlyLow/${zipCode}`);
             break;
@@ -129,12 +167,11 @@ const MapComponent = () => {
             response = await fetch(`/api/lateLow/${zipCode}`);
             break;
           default:
-            mode = 0
+            mode = 0;
             response = await fetch(`/api/earlyLow/${zipCode}`);
-
         }
       }
-      
+
       if (response.ok) {
         const data = await response.json();
         const zone = data.zone;
@@ -215,10 +252,30 @@ const MapComponent = () => {
             <MapUpdater zoom={zoomLevel} />
           </MapContainer>
         </div>
-        <ToggleSwitch onToggle={handleToggle} />
+
+        {/* ToggleSwitch, Mode button, and Pollution toggle button */}
+        <div>
+          <ToggleSwitch onToggle={handleToggle} />
+          
+          {/* Mode Change Button */}
+          <button onClick={handleModeChange}>
+            Change Mode
+          </button>
+
+          {/* Pollution Toggle Button */}
+          <button onClick={handlePollutionToggle}>
+            Toggle Pollution: {pollution ? 'High' : 'Low'}
+          </button>
+
+          {/* Display current mode description */}
+          <div>
+            {getModeDescription()}
+          </div>
+        </div>
       </section>
     </div>
   );
 };
+
 
 export default MapComponent;
