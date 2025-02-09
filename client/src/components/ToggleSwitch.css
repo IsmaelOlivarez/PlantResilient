@@ -1,0 +1,45 @@
+/* ToggleSwitch.css */
+.toggle-container {
+    display: flex;
+    justify-content: center;
+    margin: 20px;
+  }
+  
+  .toggle-button {
+    position: relative;
+    width: 80px;
+    height: 40px;
+    background-color: #ccc;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .toggle-button.on {
+    background-color: #4caf50; /* Green when on */
+  }
+  
+  .toggle-button.off {
+    background-color: #f44336; /* Red when off */
+  }
+  
+  .lever {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 32px;
+    height: 32px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+  }
+  
+  .toggle-button.on .lever {
+    transform: translateX(40px); /* Move to the right when on */
+  }
+  
+  .toggle-button.off .lever {
+    transform: translateX(0px); /* Move to the left when off */
+  }
+  
