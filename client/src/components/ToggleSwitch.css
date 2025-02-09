@@ -3,9 +3,9 @@
     display: flex;
     justify-content: center;
     margin: 20px;
-  }
-  
-  .toggle-button {
+}
+
+.toggle-button {
     position: relative;
     width: 80px;
     height: 40px;
@@ -14,17 +14,19 @@
     border: none;
     cursor: pointer;
     transition: background-color 0.3s ease;
-  }
-  
-  .toggle-button.on {
-    background-color: #4caf50; /* Green when on */
-  }
-  
-  .toggle-button.off {
-    background-color: #f44336; /* Red when off */
-  }
-  
-  .lever {
+}
+
+.toggle-button.on {
+    background-color: #4caf50;
+    /* Green when on */
+}
+
+.toggle-button.off {
+    background-color: #f44336;
+    /* Red when off */
+}
+
+.lever {
     position: absolute;
     top: 4px;
     left: 4px;
@@ -33,13 +35,48 @@
     background-color: white;
     border-radius: 50%;
     transition: transform 0.3s ease;
-  }
-  
-  .toggle-button.on .lever {
-    transform: translateX(40px); /* Move to the right when on */
-  }
-  
-  .toggle-button.off .lever {
-    transform: translateX(0px); /* Move to the left when off */
-  }
-  
+}
+
+.toggle-button.on .lever {
+    transform: translateX(40px);
+    /* Move to the right when on */
+}
+
+.toggle-button.off .lever {
+    transform: translateX(0px);
+    /* Move to the left when off */
+}
+
+
+.loading-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    color: #000;
+    z-index: 9999;
+}
+
+.loading-spinner::before {
+    content: "";
+    border: 4px solid #f3f3f3;
+    /* Light grey */
+    border-top: 4px solid #3498db;
+    /* Blue */
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 2s linear infinite;
+}
+
+/* Spinner Animation */
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}

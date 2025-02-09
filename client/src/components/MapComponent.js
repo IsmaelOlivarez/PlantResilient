@@ -1,10 +1,17 @@
-// MapComponent.js
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
-import L from 'leaflet';
-
+import { MapContainer, TileLayer, GeoJSON, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import './ToggleSwitch.css'; // External CSS for styling
+
+const MapUpdater = ({ zoom }) => {
+  const map = useMap(); // Access the Leaflet map instance
+
+  useEffect(() => {
+    map.setZoom(zoom);  // Manually set the zoom level
+  }, [zoom, map]);  // Effect will run when zoom changes
+
+  return null; // This component doesn't render anything, just modifies the map
+};
 
 const ToggleSwitch = ({ onToggle }) => {
   const [isToggled, setIsToggled] = useState(false); // Initialize state
@@ -26,42 +33,24 @@ const ToggleSwitch = ({ onToggle }) => {
 
 const MapComponent = () => {
   const [geojsonData, setGeojsonData] = useState(null);
-
-  const [zoomLevel, setZoomLevel] = useState(5);
+  const [isLoading, setIsLoading] = useState(true);
+  const [zoomLevel, setZoomLevel] = useState(7);
 
   const handleToggle = (isToggled) => {
-    setZoomLevel(isToggled ? 10 : 5);
+    setZoomLevel(isToggled ? 10 : 7);  // Toggle between zoom levels 7 and 10
   };
 
+  // Fetch GeoJSON data from the server
   useEffect(() => {
-    // Array of URLs of the GeoJSON files you want to fetch
-    const geojsonFiles = [
-      '/fl_florida_zip_codes_geo.min.json',   // Example file 1
-      '/sc_south_carolina_zip_codes_geo.min.json',
-      '/ga_georgia_zip_codes_geo.min.json',
-      '/la_louisiana_zip_codes_geo.min.json',
-      '/ms_mississippi_zip_codes_geo.min.json',
-      '/nc_north_carolina_zip_codes_geo.min.json',
-      '/tn_tennessee_zip_codes_geo.min.json',
-      '/ky_kentucky_zip_codes_geo.min.json',
-      '/va_virginia_zip_codes_geo.min.json',
-      '/wv_west_virginia_zip_codes_geo.min.json',
-      '/al_alabama_zip_codes_geo.min.json',
-      '/dc_district_of_columbia_zip_codes_geo.min.json',
-      '/ar_arkansas_zip_codes_geo.min.json'
-    ];
-
     const fetchGeojsonData = async () => {
       try {
-        // Fetch all GeoJSON files concurrently
-        const responses = await Promise.all(
-          geojsonFiles.map(url => fetch(url).then(response => response.json()))
-        );
-        
-        // Combine all GeoJSON data into one array
-        setGeojsonData(responses);
+        const response = await fetch('/api/geojson-data'); // Fetch data from the API
+        const data = await response.json();
+        setGeojsonData(data);  // Set the GeoJSON data to state
+        setIsLoading(false); // Set loading state to false once data is fetched
       } catch (error) {
         console.error("Error fetching GeoJSON files:", error);
+        setIsLoading(false); // Stop loading if an error occurs
       }
     };
 
@@ -69,7 +58,6 @@ const MapComponent = () => {
   }, []);  
 
   const onEachFeature = (feature, layer) => {
-    // Set interactivity for each zip code area
     layer.on({
       mouseover: (e) => {
         const layer = e.target;
@@ -90,43 +78,52 @@ const MapComponent = () => {
         });
       },
       click: (e) => {
-        alert(`You clicked on zip code: ${feature.properties.zipcode}`);
+        alert(`You clicked on zip code: ${feature.properties.ZCTA5CE10}`);
       },
     });
 
     // Optionally, bind popup or tooltip with data
-    layer.bindPopup(`Zip Code: ${feature.properties.zipcode}`);
+    layer.bindPopup(`Zip Code: ${feature.properties.ZCTA5CE10}`);
   };
 
   const geoJsonStyle = {
-    color: 'blue', // Set color to red
-    weight: 1,        // Set the weight of the lines
-    opacity: 0.7,      // Set opacity
+    color: 'blue', 
+    weight: 1,
+    opacity: 0.7, 
     fillColor: 'gray',
     fillOpacity: .2
   };
 
-  const toggleZoom = () => {
-    setZoomLevel(zoomLevel === 5 ? 10 : 5); // Toggle between zoom levels 5 and 10
-  };
-
   return (
     <div>
-      {/* Lever toggle button */}
-      
+      <section style={{ position: 'absolute', width: '100%' }}>
+        <div style={{ height: '750px', width: '750px', position: 'relative', margin: '0 auto', marginLeft: 80 }}>
 
-    <section style={{ position: 'absolute', width: '100%' }}>
-      <div style={{ height: '750px', width: '750px', position: 'relative', margin: '0 auto', marginLeft: 80, }}>
-        <MapContainer center={[33.5, -83.5]} zoom={5} style={{ height: '100%', width: '100%'}}>
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          {geojsonData && <GeoJSON data={geojsonData} onEachFeature={onEachFeature} style={geoJsonStyle} />}
-        </MapContainer>
-      </div>
-      <ToggleSwitch onToggle={handleToggle} />
-    </section>
+          {/* Loading Spinner */}
+          {isLoading && (
+            <div className="loading-spinner">
+              <span>Loading...</span> {/* You can add a spinner here */}
+            </div>
+          )}
+
+          {/* Map Container */}
+          <MapContainer
+            center={[24.5, -81.5]}
+            zoom={zoomLevel}
+            style={{ height: '100%', width: '100%' }}
+            scrollWheelZoom={false}
+            whenReady={() => setIsLoading(false)} // Set loading to false when map is ready
+          >
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            {geojsonData && <GeoJSON data={geojsonData} onEachFeature={onEachFeature} style={geoJsonStyle} />}
+            <MapUpdater zoom={zoomLevel} />
+          </MapContainer>
+
+        </div>
+        <ToggleSwitch onToggle={handleToggle} />
+      </section>
     </div>
   );
 };
 
 export default MapComponent;
-
